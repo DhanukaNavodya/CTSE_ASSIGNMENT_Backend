@@ -4,10 +4,14 @@ const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
 const mongoose = require("mongoose");
+const swaggerUi = require("swagger-ui-express");
+
+const notificationRoutes = require("./routes/notificationRoutes");
+const { swaggerSpec } = require("./utils/swagger");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const SERVICE_NAME = process.env.SERVICE_NAME || "service";
+const SERVICE_NAME = process.env.SERVICE_NAME || "notification-service";
 const MONGO_URI = process.env.MONGO_URI;
 
 app.use(helmet());
@@ -46,6 +50,14 @@ app.get("/db-check", (req, res) => {
     dbConnected: state === 1,
     mongoState: state
   });
+});
+
+app.use("/api/notify", notificationRoutes);
+app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.status(500).json({ message: "Internal server error" });
 });
 
 app.listen(PORT, () => {
